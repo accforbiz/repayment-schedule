@@ -17,10 +17,12 @@ class RepaymentTypeTest {
     }
 
     @Test
-    @DisplayName("잘못된 입력: 등록되지 않은 상환방식 이름을 거부하고 쓸 수 있는 이름을 알려 준다")
+    @DisplayName("잘못된 입력: 등록되지 않은 상환방식 이름을 거부하고 쓸 수 있는 이름을 모두 알려 준다")
     void rejectsUnknownName() {
         IllegalArgumentException rejection =
-                assertThrows(IllegalArgumentException.class, () -> RepaymentType.parse("ANNUITY"));
-        assertTrue(rejection.getMessage().contains("[EQUAL_PAYMENT, BULLET]"), rejection.getMessage());
+                assertThrows(IllegalArgumentException.class, () -> RepaymentType.parse("NO_SUCH_TYPE"));
+        for (RepaymentType type : RepaymentType.values()) {
+            assertTrue(rejection.getMessage().contains(type.name()), rejection.getMessage());
+        }
     }
 }
