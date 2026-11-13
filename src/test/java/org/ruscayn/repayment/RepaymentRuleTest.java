@@ -26,7 +26,11 @@ class RepaymentRuleTest {
             arguments(1L, 1, "0"),
             arguments(1_000_000_000_000L, 600, "20"),
             arguments(1L, 600, "20"),
-            arguments(1_000_000_000_000L, 1, "0"));
+            arguments(1_000_000_000_000L, 1, "0"),
+            arguments(1_000_000_000_000L, 600, "0"),
+            arguments(1L, 1, "20"),
+            arguments(1_000_000_000_000L, 1, "20"),
+            arguments(1L, 600, "0"));
 
     @ParameterizedTest(name = CONDITION_NAME)
     @FieldSource("CONDITIONS")

@@ -45,6 +45,12 @@ class AnnualInterestRateTest {
         assertEquals(8L, rate("0.01").monthlyInterestOn(1_000_000L));
     }
 
+    @Test
+    @DisplayName("검산한 정답: 1,200,000원에 연 5.125%의 한 달 이자는 소수 셋째 자리까지 반영한 5,125원이다")
+    void appliesThirdDecimalPlaceToInterest() {
+        assertEquals(5_125L, rate("5.125").monthlyInterestOn(1_200_000L));
+    }
+
     private static AnnualInterestRate rate(String percent) {
         return new AnnualInterestRate(new BigDecimal(percent));
     }

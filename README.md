@@ -64,7 +64,9 @@ List<Installment> schedule = RepaymentScheduleCalculator.calculate(
 | 금리 | 연 퍼센트 숫자, 소수 셋째 자리까지 | 0% 이상 20% 이하 | 법정 최고금리가 2021년 7월 7일부터 연 20%입니다. 은행연합회의 코픽스 운용 모범규준이 기초 자료의 금리를 소수 셋째 자리까지 다룹니다. |
 | 상환방식 | `EQUAL_PAYMENT` 또는 `BULLET` | 대소문자 구분 없음 | 과제가 요구한 두 방식입니다. |
 
-- 금리 `5.2500`처럼 끝에 0이 붙은 표기는 `5.25`와 같은 값이므로 받습니다. `5.2555`는 넷째 자리이므로 거부합니다.
+- 금리는 표기가 아니라 값으로 판단합니다. `5.2500`처럼 끝에 0이 붙은 표기는 `5.25`와 같은 값이므로 받고, `1e1`(10), `+12`, `.5` 같은 표기도 받습니다. `5.2555`는 넷째 자리이므로 거부합니다.
+- 값 앞뒤에 공백이 붙어 있으면 거부합니다.
+- 코드에서 호출할 때 금리나 상환방식에 `null`을 넘기면 `NullPointerException`으로 거부합니다.
 - 금리를 코드에서 넘길 때는 `BigDecimal`을 씁니다. `double`은 5.1 같은 값을 정확히 담지 못해 금액에 오차가 섞이기 때문입니다.
 
 ## 5. 과제에 없어서 정한 것과 이유
@@ -124,18 +126,20 @@ org.ruscayn.repayment
 
 ## 7. 테스트 구성과 근거
 
-테스트는 "이 테스트가 없으면 어떤 실수를 놓치는가"에 답할 수 있는 것만 두었습니다. 현재 89개입니다.
+테스트는 "이 테스트가 없으면 어떤 실수를 놓치는가"에 답할 수 있는 것만 두었습니다. 현재 114개입니다.
 
 | 종류 | 위치 | 잡는 실수 |
 | --- | --- | --- |
-| 요건 규칙 | `RepaymentRuleTest` | 11가지 대출 조건에서 원금 총합이 대출액과 다르거나, 회차 수가 만기와 다르거나, 음수가 나오거나, 원리금균등상환의 합계가 달라지는 실수 |
-| 검산한 정답 | `EqualPaymentScheduleTest`, `BulletScheduleTest`, `AnnualInterestRateTest` | 규칙은 지키지만 금액이 틀린 계산. 긴 만기에서 월 납입액이 1원 어긋나는 정밀도 실수 |
-| 경계값 | `LoanTest`, `AnnualInterestRateTest`, `RepaymentRuleTest` | 각 입력의 최솟값과 최댓값을 거부하거나 바로 바깥 값을 받는 실수. 최소와 최대 조합에서 계산이 깨지는 실수 |
-| 계산 방식이 바뀌는 지점 | `EqualPaymentScheduleTest`, `BulletScheduleTest`, `AnnualInterestRateTest`, `RepaymentTypeTest` | 금리 0%, 월 납입액 1원 낮추기, 만기 1개월, 월 납입액 0원처럼 다른 경로를 타는 조건에서의 실수 |
-| 잘못된 입력 | `RepaymentScheduleAppTest`, `AnnualInterestRateTest`, `RepaymentTypeTest` | 소수점 대출액, int 범위를 넘는 만기, 숫자가 아닌 금리, 넷째 자리 금리, 모르는 상환방식, 인자 개수 오류를 받아들이는 실수 |
-| 표 출력 | `ScheduleTableTest`, `RepaymentScheduleAppTest` | 열 순서나 회차 번호가 틀리는 실수, 종료 코드가 틀리는 실수 |
+| 요건 규칙 | `RepaymentRuleTest`, `RepaymentScheduleCalculatorTest` | 15가지 대출 조건에서 원금 총합이 대출액과 다르거나, 회차 수가 만기와 다르거나, 음수가 나오거나, 원리금균등상환의 합계가 달라지는 실수. 돌려준 목록을 호출한 쪽이 고칠 수 있게 되는 실수 |
+| 검산한 정답 | `EqualPaymentScheduleTest`, `BulletScheduleTest`, `AnnualInterestRateTest` | 규칙은 지키지만 금액이 틀린 계산. 긴 만기에서 월 납입액이 1원 어긋나는 정밀도 실수. 금리의 소수 셋째 자리를 계산에서 버리는 실수 |
+| 경계값 | `LoanTest`, `AnnualInterestRateTest`, `RepaymentRuleTest` | 각 입력의 최솟값과 최댓값을 거부하거나 바로 바깥 값을 받는 실수. 최소와 최대의 여덟 가지 조합에서 계산이 깨지는 실수 |
+| 계산 방식이 바뀌는 지점 | `EqualPaymentScheduleTest`, `BulletScheduleTest`, `AnnualInterestRateTest`, `RepaymentTypeTest` | 금리 0%, 월 납입액 1원 낮추기, 마지막 회차 직전에 남은 원금이 0원이 되는 경우, 만기 1개월, 월 납입액 0원처럼 다른 경로를 타는 조건에서의 실수 |
+| 잘못된 입력 | `RepaymentScheduleAppTest`, `AnnualInterestRateTest`, `RepaymentTypeTest`, `RepaymentScheduleCalculatorTest` | 소수점 대출액, int 범위를 넘는 만기, 숫자가 아닌 금리, 넷째 자리 금리, 모르는 상환방식, 모자라거나 남는 인자, null을 받아들이는 실수 |
+| 표 출력 | `ScheduleTableTest`, `RepaymentScheduleAppTest` | 열 순서나 회차 번호가 틀리는 실수, 종료 코드가 틀리는 실수, 오류 때 일반 출력에 글이 섞이는 실수 |
 
 - "틀렸던 곳" 종류의 테스트는 결함을 고칠 때 추가합니다. 아직 해당하는 결함이 없습니다.
+- 테스트가 놓치는 실수가 있는지 확인하려고, 코드를 일부러 한 군데씩 틀리게 바꾼 46가지 변형에 테스트를 돌렸습니다. 42가지는 테스트가 잡았습니다. 남은 4가지(월 납입액을 한 번만 낮추기, 곱셈 넘침 검사 제거, null 검사 두 곳 제거)는 허용 범위의 어떤 입력으로도 결과가 달라지지 않아 테스트로 구분할 수 없는 변형입니다.
+- 오류 메시지와 사용법 안내의 세부 문구는 테스트하지 않습니다. 계산 결과에 영향이 없고, 문구를 고칠 때마다 테스트가 깨지기 때문입니다.
 - 테스트와 별도로, 13만 2천 가지 조건(대출액 1원부터 1조 원, 만기 1개월부터 600개월, 금리 0%부터 20%)을 두 상환방식으로 계산해 독립적으로 작성한 계산과 대조했습니다. 26만 4천 개 스케줄에서 규칙 위반과 불일치가 없었습니다.
 
 ## 8. 과제 범위를 넘는 추가 스펙과 넣은 이유

@@ -48,6 +48,14 @@ class EqualPaymentScheduleTest {
     }
 
     @Test
+    @DisplayName("계산 방식이 바뀌는 지점: 마지막 회차 직전에 남은 원금이 0원이 되어도 바닥난 것으로 보고 월 납입액을 낮춘다")
+    void lowersPaymentWhenNothingIsLeftForLastInstallment() {
+        List<Installment> schedule = equalPayment(10L, 11, "20");
+        assertEquals(Collections.nCopies(10, new Installment(0L, 0L)), schedule.subList(0, 10));
+        assertEquals(new Installment(10L, 0L), schedule.getLast());
+    }
+
+    @Test
     @DisplayName("계산 방식이 바뀌는 지점: 만기 1개월이면 한 회차에 원금 전액과 한 달 이자를 갚는다")
     void repaysEverythingAtOnceWhenTermIsOneMonth() {
         List<Installment> schedule = equalPayment(1_200_000L, 1, "12");

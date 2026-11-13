@@ -22,7 +22,7 @@ public enum RepaymentType implements RepaymentMethod {
 
     public static RepaymentType parse(String name) {
         try {
-            return valueOf(name.trim().toUpperCase(Locale.ROOT));
+            return valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException unknownName) {
             throw new IllegalArgumentException("Repayment type must be one of "
                     + Arrays.toString(values()) + ", but was " + name + ".");

@@ -36,7 +36,7 @@ final class LoanArguments {
 
     private static long wholeNumber(String label, String text) {
         try {
-            return Long.parseLong(text.trim());
+            return Long.parseLong(text);
         } catch (NumberFormatException notWholeNumber) {
             throw new IllegalArgumentException(label + " must be a whole number, but was " + text + ".");
         }
@@ -44,7 +44,7 @@ final class LoanArguments {
 
     private static BigDecimal decimalNumber(String label, String text) {
         try {
-            return new BigDecimal(text.trim());
+            return new BigDecimal(text);
         } catch (NumberFormatException notNumber) {
             throw new IllegalArgumentException(label + " must be a number, but was " + text + ".");
         }
